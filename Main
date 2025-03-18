@@ -1,0 +1,39 @@
+string sourceCodePath = @"C:\Path\To\Your\WPF\App\bin\Release"; // Replace with your WPF app's bin\Release path
+string productName = "MyWPFApp";
+string version = "1.0.0.0";
+string upgradeGuid = "YOUR-UPGRADE-GUID"; // Replace with your actual GUID
+string componentGuid = "YOUR-COMPONENT-GUID"; // Replace with your actual GUID
+
+string wixProjectPath = @"C:\Path\To\Your\Solution\WixSetupProject\WixSetupProject.wixproj"; // Replace with the path to your .wixproj file
+string wxsFilePath = Path.Combine(Path.GetDirectoryName(wixProjectPath), "Product.wxs");
+
+// Replace placeholders in Product.wxs
+string wxsContent = File.ReadAllText(wxsFilePath);
+wxsContent = wxsContent.Replace("[ProductName]", productName);
+wxsContent = wxsContent.Replace("[ProductVersion]", version);
+wxsContent = wxsContent.Replace("[SourceCodePath]", sourceCodePath);
+wxsContent = wxsContent.Replace("YOUR-UPGRADE-GUID", upgradeGuid);
+wxsContent = wxsContent.Replace("YOUR-COMPONENT-GUID", componentGuid);
+File.WriteAllText(wxsFilePath, wxsContent);
+
+// Build the WiX project using MSBuild
+ProjectCollection projectCollection = new ProjectCollection();
+Project project = projectCollection.LoadProject(wixProjectPath);
+
+var globalProperty = new Dictionary<string, string>();
+globalProperty.Add("Configuration", "Release");
+
+var buildRequest = new BuildRequestData(project.FullPath, globalProperty, null, new[] { "Build" }, null);
+var buildParameters = new BuildParameters(projectCollection);
+buildParameters.Loggers = new[] { new ConsoleLogger(LoggerVerbosity.Normal) };
+
+var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
+
+if (buildResult.OverallResult == BuildResultCode.Success)
+{
+    Console.WriteLine("MSI package created successfully!");
+}
+else
+{
+    Console.WriteLine("MSI package creation failed.");
+}
