@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="*" Name="[ProductName]" Version="[ProductVersion]" Manufacturer="Your Company" UpgradeCode="YOUR-UPGRADE-GUID">
+        <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="ProgramFilesFolder">
+                <Directory Id="INSTALLFOLDER" Name="[ProductName]">
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature Id="ProductFeature" Title="[ProductName] Feature" Level="1">
+            <ComponentGroupRef Id="ProductComponents" />
+        </Feature>
+    </Product>
+
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <ComponentGroup Id="ProductComponents">
+                <Component Id="ProductComponent" Guid="YOUR-COMPONENT-GUID">
+                    <File Id="YourAppFile" Source="[SourceCodePath]\MyWPFApp.exe" KeyPath="yes" />
+                </Component>
+            </ComponentGroup>
+        </DirectoryRef>
+    </Fragment>
+</Wix>
