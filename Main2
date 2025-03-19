@@ -1,19 +1,45 @@
-static void Main(string[] args)
+class Program
+{
+    [DllImport("msi.dll", CharSet = CharSet.Auto)]
+    public static extern uint MsiOpenPackage(string path, out IntPtr hProduct);
+
+    [DllImport("msi.dll", CharSet = CharSet.Auto)]
+    public static extern uint MsiGetProperty(IntPtr hProduct, string property, StringBuilder value, ref int len);
+
+    [DllImport("msi.dll", CharSet = CharSet.Auto)]
+    public static extern uint MsiCloseHandle(IntPtr hProduct);
+
+    static void GetMsiProperty(string msiFilePath, string propertyName)
     {
-        string msiFilePath = @"path\to\your\package.msi";
-        
-        using (Database db = new Database(msiFilePath, DatabaseOpenMode.ReadOnly))
+        if (MsiOpenPackage(msiFilePath, out IntPtr hProduct) != 0)
         {
-            // Query for the Uninstall command (usually in the Property table)
-            string uninstallCommand = db.ExecuteScalar<string>("SELECT `Value` FROM `Property` WHERE `Property` = 'UninstallString'");
-            
-            if (!string.IsNullOrEmpty(uninstallCommand))
-            {
-                Console.WriteLine("Uninstall Command: " + uninstallCommand);
-            }
-            else
-            {
-                Console.WriteLine("Uninstall command not found.");
-            }
+            Console.WriteLine("Failed to open MSI package.");
+            return;
         }
+
+        int size = 512; // Buffer size
+        StringBuilder propertyValue = new StringBuilder(size);
+
+        if (MsiGetProperty(hProduct, propertyName, propertyValue, ref size) == 0)
+        {
+            Console.WriteLine($"{propertyName}: {propertyValue}");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to get property {propertyName}.");
+        }
+
+        MsiCloseHandle(hProduct);
     }
+
+    static void Main(string[] args)
+    {
+        string msiFilePath = @"C:\Path\To\Your\File.msi";
+
+        GetMsiProperty(msiFilePath, "ProductName");     // Application Name
+        GetMsiProperty(msiFilePath, "ProductVersion");  // Version
+        GetMsiProperty(msiFilePath, "Manufacturer");    // Publisher
+        GetMsiProperty(msiFilePath, "ProductCode");     // GUID
+        GetMsiProperty(msiFilePath, "INSTALLPROPERTY_LOCALPACKAGE"); // Local Package Path
+    }
+}
