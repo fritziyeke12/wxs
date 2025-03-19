@@ -1,26 +1,19 @@
 static void Main(string[] args)
+    {
+        string msiFilePath = @"path\to\your\package.msi";
+        
+        using (Database db = new Database(msiFilePath, DatabaseOpenMode.ReadOnly))
         {
-            string wixProjectPath = @"C:\Path\To\Your\Solution\WixSetupProject\WixSetupProject.wixproj"; // Replace with your .wixproj path
-
-            ProjectCollection projectCollection = new ProjectCollection();
-            Project project = projectCollection.LoadProject(wixProjectPath);
-
-            var globalProperty = new Dictionary<string, string>();
-            globalProperty.Add("Configuration", "Release");
-            globalProperty.Add("OutDir", @"C:\Path\To\Your\Output\Folder\"); // Replace with your desired output path
-
-            var buildRequest = new BuildRequestData(project.FullPath, globalProperty, null, new[] { "Build" }, null);
-            var buildParameters = new BuildParameters(projectCollection);
-            buildParameters.Loggers = new[] { new ConsoleLogger(LoggerVerbosity.Normal) };
-
-            var buildResult = BuildManager.DefaultBuildManager.Build(buildParameters, buildRequest);
-
-            if (buildResult.OverallResult == BuildResultCode.Success)
+            // Query for the Uninstall command (usually in the Property table)
+            string uninstallCommand = db.ExecuteScalar<string>("SELECT `Value` FROM `Property` WHERE `Property` = 'UninstallString'");
+            
+            if (!string.IsNullOrEmpty(uninstallCommand))
             {
-                Console.WriteLine("MSI created successfully!");
+                Console.WriteLine("Uninstall Command: " + uninstallCommand);
             }
             else
             {
-                Console.WriteLine("MSI creation failed.");
+                Console.WriteLine("Uninstall command not found.");
             }
         }
+    }
