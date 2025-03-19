@@ -1,0 +1,33 @@
+// Connection string (modify it based on your setup)
+        string connectionString = "Server=your_server;Database=your_database;Integrated Security=True;";
+
+        // SQL query to insert a new row
+        string sqlQuery = "INSERT INTO YourTable (Column1, Column2, Column3) VALUES (@Value1, @Value2, @Value3)";
+
+        // Create the connection
+        using (SqlConnection connection = new SqlConnection(connectionString))
+        {
+            try
+            {
+                // Open the connection
+                connection.Open();
+
+                // Create the command object
+                using (SqlCommand command = new SqlCommand(sqlQuery, connection))
+                {
+                    // Add parameters to avoid SQL injection
+                    command.Parameters.AddWithValue("@Value1", "SomeData");
+                    command.Parameters.AddWithValue("@Value2", 123);
+                    command.Parameters.AddWithValue("@Value3", DateTime.Now);
+
+                    // Execute the insert command
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) inserted.");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Handle any errors that may have occurred
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
